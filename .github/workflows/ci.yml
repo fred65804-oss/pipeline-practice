@@ -4,8 +4,8 @@ on:
   push:
 
 jobs:
-say-hello:
-    runs-on: ubuntu-latest
+  say-hello:
+    runs-on: ubuntu-nonsense
     steps:
       - name: Run hello
         run: echo "hello"

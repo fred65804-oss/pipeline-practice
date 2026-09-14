@@ -3,7 +3,7 @@ const assert = require('node:assert');
 const add = require('./add.js');
 
 test('adds two positive numbers', () => {
-  assert.strictEqual(add(2,3), 6);
+  assert.strictEqual(add(2,3), 5);
 });
 
 test('adds a negative number', () => {

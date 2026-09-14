@@ -8,4 +8,4 @@ jobs:
     runs-on: ubuntu-nonsense
     steps:
       - name: Run hello
-        run: echo "hello"
+        run: ecko "hello"

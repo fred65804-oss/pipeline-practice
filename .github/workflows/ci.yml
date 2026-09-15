@@ -4,6 +4,7 @@ on:
   push:
 
 jobs:
+  run: npm run lint
   test:
     runs-on: ubuntu-latest
     steps:

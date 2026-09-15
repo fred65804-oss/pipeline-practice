@@ -4,8 +4,46 @@ on:
   push:
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Linting
+        run: npm run lint
+name: CI
+
+on:
+  push:
+
+jobs:
   - name: linting
     run: npm run lint
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run ci
+        run: npm ci
+
+      - name: Run test
+        run: npm test
   test:
     runs-on: ubuntu-latest
     steps:

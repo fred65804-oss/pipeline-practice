@@ -7,5 +7,5 @@ test('adds two positive numbers', () => {
 });
 
 test('adds a negative number', () => {
-  assert.strictEqual(add(5,8), -3);
+  assert.strictEqual(add(5,-8), -3);
 });

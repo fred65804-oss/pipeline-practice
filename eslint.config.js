@@ -8,6 +8,7 @@ module.exports = [
         globals: {
           require: 'readonly',
           module: 'writable',
+          console: 'readonly',
          },
         },
        },

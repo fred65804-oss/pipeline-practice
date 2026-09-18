@@ -71,4 +71,4 @@ jobs:
 
     steps:
       - name: Logging for deployment
-        run: echo "deploying...."
+        run: echo "deploying it...."

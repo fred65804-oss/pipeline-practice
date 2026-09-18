@@ -24,6 +24,10 @@ jobs:
           API_KEY: ${{ secrets.API_KEY }}
         run: echo "the key is $API_KEY"
 
+      - name: Secret #2
+        env:
+          run: echo "$API_KEY" | base64
+
       - name: Linting
         run: npm run lint
 

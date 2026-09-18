@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
 
 jobs:
@@ -63,3 +64,11 @@ jobs:
 
       - name: Push docker image
         run: docker push ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+  deploy:
+    needs: [build]
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Logging for deployment
+        run: echo "deploying...."

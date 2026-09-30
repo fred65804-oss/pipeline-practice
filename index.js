@@ -11,7 +11,7 @@ const server = http.createServer((req, res) => {
   }
 
   res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end(`2 + 3 = ${add(2,3)}\n`);
+  res.end(`2 + 3 = ${add(2,3)} (deployed by pipeline)\n`);
 });
 
 server.listen(PORT, () => {

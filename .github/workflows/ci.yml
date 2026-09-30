@@ -60,7 +60,7 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Build docker image
-        run: docker build -t ghcr.io/${{ github.repository }}:${{ github.sha }} .
+        run: docker build -t ghcr.io/${{ github.repository }}:${{ github.sha }} --build-arg GIT_SHA=${{ github.sha }} .
 
       - name: Push docker image
         run: docker push ghcr.io/${{ github.repository }}:${{ github.sha }}
@@ -92,5 +92,12 @@ jobs:
       - name: Health Check
         env:
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
-        run:
-          curl -fsS --retry 10 --retry-delay 2 --retry-connrefused --max-time 5 http://$DEPLOY_HOST:3000/health
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          body=$(curl -fsS --retry 10 --retry-delay 2 --retry-connrefused --max-time 5 http://$DEPLOY_HOST:3000/health)
+          echo "Health response: $body"
+          version=$(echo "$body" | jq -r .version)
+          if [ "$version" != "$EXPECTED_SHA" ]; then
+            echo "Expected $EXPECTED_SHA but the server is running $version"
+            exit 1
+          fi

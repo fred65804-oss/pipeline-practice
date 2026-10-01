@@ -1,0 +1,56 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Full commit SHA to roll back to
+        required: true
+        type: string
+
+jobs:
+  Rollback:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Set up SSH Key
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+      - name: Write hosts
+        env:
+          DEPLOY_KNOWN_HOSTS: ${{ vars.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Check SHA
+        env:
+          SHA: ${{ inputs.sha }}
+        run: |
+          if [[ ! "$SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Not a full 40-character commit SHA: $SHA"
+            exit 1
+          fi
+      - name: Deploy
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          IMAGE: ghcr.io/${{ github.repository }}:${{ inputs.sha }}
+        run:
+          ssh deploy@$DEPLOY_HOST "docker pull $IMAGE && docker rm -f app && docker run -d --name app --restart unless-stopped -p 3000:3000 $IMAGE"
+
+      - name: Health Check
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          EXPECTED_SHA: ${{ inputs.sha }}
+
+        run: |
+          body=$(curl -fsS --retry 10 --retry-delay 2 --retry-connrefused --max-time 5 http://$DEPLOY_HOST:3000/health)
+          echo "Health Response: $body"
+          version=$(echo "$body" | jq -r .version)
+          if [ "$version" != "$EXPECTED_SHA" ]; then
+            echo "Expected $EXPECTED_SHA but the server is running on $version"
+            exit 1
+          fi

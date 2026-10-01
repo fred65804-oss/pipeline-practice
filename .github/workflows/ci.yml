@@ -83,11 +83,18 @@ jobs:
           DEPLOY_KNOWN_HOSTS: ${{ vars.DEPLOY_KNOWN_HOSTS }}
         run: |
           printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Record current version
+        env:
+         DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+        run: |
+          PREVIOUS_IMAGE=$(ssh deploy@$DEPLOY_HOST "docker inspect app --format '{{.Config.Image}}'")
+          echo "Currently running:$PREVIOUS_IMAGE"
+          echo "PREVIOUS_IMAGE=$PREVIOUS_IMAGE" >> "$GITHUB_ENV"
       - name: Deploy
         env:
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
           IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
-        run:
+        run: |
           ssh deploy@$DEPLOY_HOST "docker pull $IMAGE && docker rm -f app && docker run -d --name app --restart unless-stopped -p 3000:3000 $IMAGE"
       - name: Health Check
         env:
@@ -101,3 +108,9 @@ jobs:
             echo "Expected $EXPECTED_SHA but the server is running $version"
             exit 1
           fi
+      - name: Rollback
+        if: failure() && env.PREVIOUS_IMAGE != ''
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+        run: |
+          ssh deploy@$DEPLOY_HOST "docker pull $PREVIOUS_IMAGE && docker rm -f app && docker run -d --name app --restart unless-stopped -p 3000:3000 $PREVIOUS_IMAGE"

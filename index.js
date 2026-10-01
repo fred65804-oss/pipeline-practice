@@ -1,7 +1,7 @@
 const http = require('node:http');
 const add = require('./add.js');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 const server = http.createServer((req, res) => {
   if (req.url === '/health') {
